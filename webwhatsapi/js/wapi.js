@@ -6,7 +6,7 @@
  * Auto discovery the webpack object references of instances that contains all functions used by the WAPI
  * functions and creates the Store object.
  */
-if (!window.Store) {
+ if (!window.Store) {
     (function () {
         function getStore(modules) {
         let foundCount = 0;
@@ -19,7 +19,7 @@ if (!window.Store) {
                 { id: "State", conditions: (module) => (module.STATE && module.STREAM) ? module : null },
                 { id: "WapDelete", conditions: (module) => (module.sendConversationDelete && module.sendConversationDelete.length == 2) ? module : null },
                 { id: "Conn", conditions: (module) => (module.default && module.default.ref && module.default.refTTL) ? module.default : null },
-                { id: "WapQuery", conditions: (module) => (module.queryExist) ? module : ((module.default && module.default.queryExist) ? module.default : null) },
+                { id: "WapQuery", conditions: (module) => (module.default && module.default.queryExist) ? module.default : null },
                 { id: "CryptoLib", conditions: (module) => (module.decryptE2EMedia) ? module : null },
                 { id: "OpenChat", conditions: (module) => (module.default && module.default.prototype && module.default.prototype.openChat) ? module.default : null },
                 { id: "UserConstructor", conditions: (module) => (module.default && module.default.prototype && module.default.prototype.isServer && module.default.prototype.isUser) ? module.default : null },
@@ -65,7 +65,7 @@ if (!window.Store) {
             webpackJsonp([], {'parasite': (x, y, z) => getStore(z)}, ['parasite']);
         } else {
             let tag = new Date().getTime();
-			webpackChunkbuild.push([
+			webpackChunkwhatsapp_web_client.push([
 				["parasite" + tag],
 				{
 
