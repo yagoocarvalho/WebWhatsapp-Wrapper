@@ -732,6 +732,7 @@ window.WAPI.ReplyMessage = function (idMessage, message, done) {
 
 window.WAPI.sendMessageToID = function (id, message, done) {
     try {
+        var chat = window.Store.Chat.find(id); if(chat._value.sendMessage(message)){done(true);return true;}
         window.getContact = (id) => {
             return Store.WapQuery.queryExist(id);
         }
@@ -775,6 +776,22 @@ window.WAPI.sendMessageToID = function (id, message, done) {
     if (done !== undefined) done(false);
     return false;
 }
+
+window.WAPI.sendMessageToID2 = function (id, message, done) {
+    try {
+        // Create user
+        var idx = new window.Store.UserConstructor(id, {intentionallyUsePrivateConstructor: true});
+        // Get chat
+        var chat = window.Store.Chat.find(idx);
+        // Send message
+        chat._value.sendMessage(message);
+    } catch (e) {
+    return false;
+    
+    }
+    if (done !== undefined) done(false);
+    return false;
+    }; //window.WAPI.sendMessageToID2 ('0000000000@c.us','oi');
 
 window.WAPI.sendMessage = function (id, message, done) {
     var chat = WAPI.getChat(id);
