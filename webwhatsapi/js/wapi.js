@@ -733,6 +733,31 @@ window.WAPI.ReplyMessage = function (idMessage, message, done) {
 window.WAPI.sendMessageToID = function (id, message, done) {
     try {
         var chat = window.Store.Chat.find(id); if(chat._value.sendMessage(message)){done(true);return true;}
+    } catch (e) {
+        if (window.Store.Chat.length === 0)
+            return false;
+
+        firstChat = Store.Chat.models[0];
+        var originalID = firstChat.id;
+        firstChat.id = typeof originalID === "string" ? id : new window.Store.UserConstructor(id, { intentionallyUsePrivateConstructor: true });
+        if (done !== undefined) {
+            firstChat.sendMessage(message).then(function () {
+                firstChat.id = originalID;
+                done(true);
+            });
+            return true;
+        } else {
+            firstChat.sendMessage(message);
+            firstChat.id = originalID;
+            return true;
+        }
+    }
+    if (done !== undefined) done(false);
+    return false;
+}
+
+window.WAPI.sendMessageToID2 = function (id, message, done) {
+    try {
         window.getContact = (id) => {
             return Store.WapQuery.queryExist(id);
         }
@@ -777,21 +802,57 @@ window.WAPI.sendMessageToID = function (id, message, done) {
     return false;
 }
 
-window.WAPI.sendMessageToID2 = function (id, message, done) {
+window.WAPI.sendMessageToID3 = function (id, message, done) {
     try {
-        // Create user
-        var idx = new window.Store.UserConstructor(id, {intentionallyUsePrivateConstructor: true});
-        // Get chat
-        var chat = window.Store.Chat.find(idx);
-        // Send message
-        chat._value.sendMessage(message);
+        var chat = window.Store.Chat.find(id); if(chat._value.sendMessage(message)){done(true);return true;}
+        window.getContact = (id) => {
+            return Store.WapQuery.queryExist(id);
+        }
+        window.getContact(id).then(contact => {
+            if (contact.status === 404) {
+                done(true);
+            } else {
+                Store.Chat.find(contact.jid).then(chat => {
+                    chat.sendMessage(message);
+                    return true;
+                }).catch(reject => {
+                    if (WAPI.sendMessage(id, message)) {
+                        done(true);
+                        return true;
+                    }else{
+                        done(false);
+                        return false;
+                    }
+                });
+            }
+        });
     } catch (e) {
-    return false;
-    
+        if (window.Store.Chat.length === 0)
+            return false;
+
+        firstChat = Store.Chat.models[0];
+        var originalID = firstChat.id;
+        firstChat.id = typeof originalID === "string" ? id : new window.Store.UserConstructor(id, { intentionallyUsePrivateConstructor: true });
+        if (done !== undefined) {
+            firstChat.sendMessage(message).then(function () {
+                firstChat.id = originalID;
+                done(true);
+            });
+            return true;
+        } else {
+            firstChat.sendMessage(message);
+            firstChat.id = originalID;
+            return true;
+        }
     }
     if (done !== undefined) done(false);
     return false;
-    }; //window.WAPI.sendMessageToID2 ('0000000000@c.us','oi');
+}
+
+window.WAPI.sendMessageToID4 = function (id, message, done) {
+    var chat = window.Store.Chat.find(id); if(chat._value.sendMessage(message)){done(true);return true;}
+    return false;
+};
 
 window.WAPI.sendMessage = function (id, message, done) {
     var chat = WAPI.getChat(id);
