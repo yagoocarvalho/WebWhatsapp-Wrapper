@@ -73,7 +73,9 @@
       }
 
       window.Store.Chat.modelClass.prototype.sendMessage = function (e) {
+        console.log("[sendMessage] Sending message")
         window.Store.SendTextMsgToChat(this, ...arguments);
+        console.log(window.Store.SendTextMsgToChat)
       }
 
       return window.Store;
@@ -317,7 +319,9 @@ window.WAPI.getChat = function (id, done) {
   if (WAPI.isMultiDeviceVersion()) {
     let chat = window.Store.Chat.get(id);
     if (chat) {
+      console.log(chat);
       if (chat.sendMessage) {
+        console.log(chat.sendMessage);
         if (done) done(chat);
         return chat;
       } else {
@@ -824,6 +828,7 @@ window.WAPI.sendMessageToID = function (id, message, done) {
       console.log('Fluxo para Multdevice: ' + id);
       WAPI.getChat(id, chat => {
         if (chat) {
+          console.log('Fluxo para Multdevice: ' + chat);
           chat.sendMessage(message);
           console.log('Mensagem enviada!');
           done(true);
@@ -1291,8 +1296,10 @@ window.WAPI.deleteMessage = function (chatId, messageArray, revoke = false, done
 window.WAPI.isMultiDeviceVersion = function () {
   try {
     let resp = window.Store.FeatureChecker?.GK?.features['MD_BACKEND'] || window.Store.FeatureChecker.FEATURE_CHANGE_EVENT;
+    console.log("Multi device detected!");
     return resp;
   } catch {
+    console.log("Multi device NOT detected!");
     return false;
   }
 }
