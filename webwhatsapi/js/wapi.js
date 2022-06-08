@@ -6,7 +6,7 @@
  * Auto discovery the webpack object references of instances that contains all functions used by the WAPI
  * functions and creates the Store object.
  */
- if (!window.Store) {
+if (!window.Store) {
   (function () {
     function getStore(modules) {
       let foundCount = 0;
@@ -21,7 +21,7 @@
         { id: "Conn", conditions: (module) => (module.default && module.default.ref && module.default.refTTL) ? module.default : null },
         // { id: "WapQuery", conditions: (module) => (module.default && module.default.queryExist) ? module.default : null },
         // { id: "WapQuery", conditions: (module) => (module.queryExist) ? module : ((module.default && module.default.queryExist) ? module.default : null) },
-        { id: "WapQuery", conditions: (module) => (module.default && module.instance && module.instance.queryExist) ? module.instance : null},
+        { id: "WapQuery", conditions: (module) => (module.default && module.instance && module.instance.queryExist) ? module.instance : null },
         { id: "CryptoLib", conditions: (module) => (module.decryptE2EMedia) ? module : null },
         { id: "OpenChat", conditions: (module) => (module.default && module.default.prototype && module.default.prototype.openChat) ? module.default : null },
         // { id: "UserConstructor", conditions: (module) => (module.default && module.default.prototype && module.default.prototype.isServer && module.default.prototype.isUser) ? module.default : null },
@@ -1450,19 +1450,55 @@ window.WAPI.getBufferedNewMessages = function (done) {
 };
 /** End new messages observable functions **/
 
-window.WAPI.sendImage = function (imgBase64, chatid, filename, caption, done) {
+window.WAPI.sendImageOld = function (imgBase64, chatid, filename, caption, done) {
   //var idUser = new window.Store.UserConstructor(chatid);
+  console.log("[sendImage] Sending image")
   var idUser = new window.Store.UserConstructor(chatid, { intentionallyUsePrivateConstructor: true });
+  console.log(idUser)
   // create new chat
   return Store.Chat.find(idUser).then((chat) => {
+    console.log(chat)
     var mediaBlob = window.WAPI.base64ImageToFile(imgBase64, filename);
+    console.log(mediaBlob)
     var mc = new Store.MediaCollection(chat);
+    console.log(mc)
     mc.processAttachments([{ file: mediaBlob }, 1], chat, 1).then(() => {
+      console.log("[sendImage] processAttachments")
       var media = mc.models[0];
+      console.log(media)
       media.sendToChat(chat, { caption: caption });
       if (done !== undefined) done(true);
     });
   });
+}
+
+window.WAPI.sendImage = function (imgBase64, chatid, filename, caption, done) {
+  //var idUser = new window.Store.UserConstructor(chatid);
+  var idUser = new window.Store.UserConstructor(chatid, { intentionallyUsePrivateConstructor: true });
+
+  function send(chat) {
+    var mediaBlob = window.WAPI.base64ImageToFile(imgBase64, filename);
+    var mc = new Store.MediaCollection(chat);
+    mc.processAttachments([{ file: mediaBlob }, 1], chat, 1).then(() => {
+      // var media = mc.models[0];
+      var media = mc._models[0];
+      media.sendToChat(chat, { caption: caption });
+      if (done !== undefined) done(true);
+    }).catch(err => {
+      console.log("upload --- handle---error", err)
+    })
+  }
+
+  // create new chat
+  return Store.Chat.find(idUser).then((chat) => {
+    send(chat)
+  }).catch(err => {
+    // Query the mobile phone number and obtain the mobile phone number, there are differences
+    // (610481277023 :: 61481277023)
+    // Use the current chat window
+    let activeChat = Store.Chat.getActive()
+    send(activeChat)
+  })
 }
 
 window.WAPI.base64ImageToFile = function (b64Data, filename) {
