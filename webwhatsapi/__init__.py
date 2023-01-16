@@ -14,11 +14,11 @@ from io import BytesIO
 from json import dumps, loads
 
 import magic
-from PIL import Image
 from axolotl.kdf.hkdfv3 import HKDFv3
 from axolotl.util.byteutil import ByteUtil
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from PIL import Image
 from resizeimage import resizeimage
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -319,14 +319,14 @@ class WhatsAPIDriver(object):
         """
         WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located((By.CSS_SELECTOR, self._SELECTORS['mainPage'] + ',' + self._SELECTORS['qrCode'])))
         try:
-            self.driver.find_element_by_css_selector(self._SELECTORS['mainPage'])
+            self.driver.find_element(by=By.CSS_SELECTOR, value=self._SELECTORS['mainPage'])
             return True
         except NoSuchElementException:
-            self.driver.find_element_by_css_selector(self._SELECTORS['qrCode'])
+            self.driver.find_element(by=By.CSS_SELECTOR, value=self._SELECTORS['qrCode'])
             return False
 
     def get_qr_plain(self):
-        return self.driver.find_element_by_css_selector(
+        return self.driver.find_element(by=By.CSS_SELECTOR, value=
             self._SELECTORS["qrCodePlain"]
         ).get_attribute("data-ref")
 
@@ -334,7 +334,7 @@ class WhatsAPIDriver(object):
         """Get pairing QR code from client"""
         if "Click to reload QR code" in self.driver.page_source:
             self.reload_qr()
-        qr = self.driver.find_element_by_css_selector(self._SELECTORS["qrCode"])
+        qr = self.driver.find_element(by=By.CSS_SELECTOR, value=self._SELECTORS["qrCode"])
         if filename is None:
             fd, fn_png = tempfile.mkstemp(prefix=self.username, suffix=".png")
         else:
@@ -348,7 +348,7 @@ class WhatsAPIDriver(object):
     def get_qr_base64(self):
         if "Click to reload QR code" in self.driver.page_source:
             self.reload_qr()
-        qr = self.driver.find_element_by_css_selector(self._SELECTORS["qrCode"])
+        qr = self.driver.find_element(by=By.CSS_SELECTOR, value=self._SELECTORS["qrCode"])
 
         return qr.screenshot_as_base64
 
@@ -589,7 +589,7 @@ class WhatsAPIDriver(object):
         raise ChatNotFoundError("Chat for phone {0} not found".format(number))
 
     def reload_qr(self):
-        self.driver.find_element_by_css_selector(self._SELECTORS["QRReloader"]).click()
+        self.driver.find_element(by=By.CSS_SELECTOR, value=self._SELECTORS["QRReloader"]).click()
 
     def get_status(self):
         """
@@ -603,17 +603,17 @@ class WhatsAPIDriver(object):
         if self.driver.session_id is None:
             return WhatsAPIDriverStatus.NotConnected
         try:
-            self.driver.find_element_by_css_selector(self._SELECTORS["mainPage"])
+            self.driver.find_element(by=By.CSS_SELECTOR, value=self._SELECTORS["mainPage"])
             return WhatsAPIDriverStatus.LoggedIn
         except NoSuchElementException:
             pass
         try:
-            self.driver.find_element_by_css_selector(self._SELECTORS["qrCode"])
+            self.driver.find_element(by=By.CSS_SELECTOR, value=self._SELECTORS["qrCode"])
             return WhatsAPIDriverStatus.NotLoggedIn
         except NoSuchElementException:
             pass
         try:
-            self.driver.find_element_by_css_selector(self._SELECTORS["OpenHereButton"])
+            self.driver.find_element(by=By.CSS_SELECTOR, value=self._SELECTORS["OpenHereButton"])
             return WhatsAPIDriverStatus.LoggedInAnotherBrowser
         except NoSuchElementException:
             pass
